@@ -4,25 +4,10 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <None Remove="SpeechlyApi" />
-    <None Remove="Grpc" />
-    <None Remove="Grpc.Tools" />
-    <None Remove="OpenTK" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Grpc" Version="2.38.1" />
-    <PackageReference Include="Grpc.Tools" Version="2.38.1">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="SpeechlyApi" Version="0.4.3" />
     <PackageReference Include="OpenTK" Version="4.6.4" />
-    <PackageReference Include="SpeechlyApi" Version="0.2.0" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Protobuf Include="identity.proto" />
-    <Protobuf Include="slu.proto" />
-  </ItemGroup>
+
 </Project>

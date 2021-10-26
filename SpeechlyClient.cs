@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Speechly.Identity.V1;
-using Speechly.Slu.V1;
-using OpenTK.Audio.OpenAL;
 using Grpc.Net.Client;
 using Grpc.Core;
+using OpenTK.Audio.OpenAL;
+using Speechly.Identity.V1;
+using Speechly.Slu.V1;
 using Google.Protobuf;
 
 namespace SpeechlyExampleApp
@@ -29,7 +29,6 @@ namespace SpeechlyExampleApp
             Config = new SLUConfig
             {
                 Encoding = SLUConfig.Types.Encoding.Linear16,
-                LanguageCode = "en-US",
                 SampleRateHertz = 16_000,
             }
         };
@@ -90,18 +89,18 @@ namespace SpeechlyExampleApp
                 this.token = await getToken();
             }
 
-            var authInterceptor = new AsyncAuthInterceptor(async (context, metadata) =>
+            var credentials = CallCredentials.FromInterceptor((context, metadata) =>
             {
-                metadata.Add(
-                    new Metadata.Entry("Authorization", "Bearer " + this.token));
+                metadata.Add("Authorization", $"Bearer {this.token}");
+                return Task.CompletedTask;
             });
 
-            var metadataCredentials = CallCredentials.FromInterceptor(authInterceptor);
-            ChannelCredentials channelCredentials = ChannelCredentials.Create(new SslCredentials(), metadataCredentials);
-            Channel channel = new Channel("api.speechly.com", channelCredentials);
+            var channel = GrpcChannel.ForAddress(this.apiUrl, new GrpcChannelOptions
+            {
+                Credentials = ChannelCredentials.Create(new SslCredentials(), credentials)
+            });
+
             this.sluClient = new SLU.SLUClient(channel);
-
-
             this.call = this.sluClient.Stream();
 
             ThreadStart childref = new ThreadStart(readResponse);
@@ -120,7 +119,7 @@ namespace SpeechlyExampleApp
             }
         }
 
-        public async void start()
+        public void start()
         {
             if (this.debug)
             {
@@ -129,10 +128,9 @@ namespace SpeechlyExampleApp
 
             sendStart();
             this.mic.start();
-
         }
 
-        public async void stop()
+        public void stop()
         {
             if (this.debug)
             {
@@ -142,12 +140,11 @@ namespace SpeechlyExampleApp
             this.mic.stop();
         }
 
-        public async void toggle()
+        public void toggle()
         {
             if (this.mic.Recording)
             {
                 this.stop();
-                
             }
             else
             {
@@ -180,7 +177,7 @@ namespace SpeechlyExampleApp
 
             try {
                 call.RequestStream.WriteAsync(audio).Wait();
-            } 
+            }
             catch (Exception e)
             {
                 Console.WriteLine("Error sending data: " + e);
